@@ -68,26 +68,36 @@ sci-calc/
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker installed
-- Git installed
+- Docker installed (for Docker deployment)
 - Python 3.8+ (for local development)
 
-### 1. Clone Repository
+### Quick Start - Docker Hub (Recommended)
+```bash
+# Pull and run the pre-built image directly from Docker Hub
+docker pull malluvkcr7/sci-calc:latest
+docker run -p 8080:8080 malluvkcr7/sci-calc:latest
+
+# The calculator will be available at: http://localhost:8080
+```
+
+### Development Setup
+
+#### 1. Clone Repository
 ```bash
 git clone https://github.com/malluvkcr7/calci_ma.git
 cd calci_ma
 ```
 
-### 2. Run with Docker (Recommended)
+#### 2. Run with Docker (Build from Source)
 ```bash
-# Build the image
+# Build the image locally
 docker build -t sci-calc .
 
 # Run web interface (recommended)
-docker run -d -p 8090:8080 --name sci-calc-web sci-calc
+docker run -d -p 8080:8080 --name sci-calc-web sci-calc
 
 # Access web interface
-open http://localhost:8090
+open http://localhost:8080
 ```
 
 ### 3. Local Development
@@ -171,9 +181,30 @@ pytest tests/ --cov=calculator --cov-report=html
 - ✅ Docker image versioning with build numbers
 - ✅ Deployment verification and health checks
 
-## 🚀 Deployment
+## 🚀 Deployment & Public Access
 
-### Ansible Deployment
+### Docker Hub - Public Access
+The calculator is available as a public Docker image on Docker Hub:
+
+**Repository**: `malluvkcr7/sci-calc:latest`
+
+**For End Users** (No setup required):
+```bash
+# Anyone can pull and run directly
+docker pull malluvkcr7/sci-calc:latest
+docker run -p 8080:8080 malluvkcr7/sci-calc:latest
+
+# Calculator available at: http://localhost:8080
+```
+
+**What users get**:
+- ✅ **No installation needed** - Just Docker required
+- ✅ **Pre-built image** - No compilation or build process
+- ✅ **Web interface** - Beautiful, responsive calculator UI
+- ✅ **All functions** - Scientific operations ready to use
+- ✅ **Cross-platform** - Works on Windows, Mac, Linux
+
+### Ansible Deployment (For Developers)
 ```bash
 # Navigate to ansible directory
 cd ansible/
@@ -187,7 +218,7 @@ ansible-playbook -i inventory.ini deploy.yml
 
 ### Manual Docker Deployment
 ```bash
-# Pull from Docker Hub
+# Pull from Docker Hub (same as end-user command)
 docker pull malluvkcr7/sci-calc:latest
 
 # Run container
