@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .calc-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .calc-section h3 {
+            margin-top: 0;
+            color: #ffd700;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 8px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .result {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0, 255, 0, 0.2);
+            border-radius: 5px;
+            display: none;
+        }
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 Scientific Calculator</h1>
+        
+        <div class="calc-section">
+            <h3>√ Square Root</h3>
+            <input type="number" id="sqrt-x" placeholder="Enter x" step="any">
+            <button onclick="calculate('sqrt')">Calculate √x</button>
+            <div id="sqrt-result" class="result"></div>
+            <div id="sqrt-error" class="error"></div>
+        </div>
+
+        <div class="calc-section">
+            <h3>! Factorial</h3>
+            <input type="number" id="fact-x" placeholder="Enter integer" step="1">
+            <button onclick="calculate('factorial')">Calculate x!</button>
+            <div id="factorial-result" class="result"></div>
+            <div id="factorial-error" class="error"></div>
+        </div>
+
+        <div class="calc-section">
+            <h3>ln Natural Logarithm</h3>
+            <input type="number" id="ln-x" placeholder="Enter x > 0" step="any">
+            <button onclick="calculate('ln')">Calculate ln(x)</button>
+            <div id="ln-result" class="result"></div>
+            <div id="ln-error" class="error"></div>
+        </div>
+
+        <div class="calc-section">
+            <h3>^ Power</h3>
+            <input type="number" id="power-x" placeholder="Enter x" step="any">
+            <span>^</span>
+            <input type="number" id="power-b" placeholder="Enter b" step="any">
+            <button onclick="calculate('power')">Calculate x^b</button>
+            <div id="power-result" class="result"></div>
+            <div id="power-error" class="error"></div>
+        </div>
+
+        <div class="footer">
+            <p>Built with DevOps: Git → Jenkins → Docker → Ansible</p>
+        </div>
+    </div>
+
+    <script>
+        function clearResults(operation) {
+            document.getElementById(operation + '-result').style.display = 'none';
+            document.getElementById(operation + '-error').style.display = 'none';
+        }
+
+        function showResult(operation, result) {
+            const resultDiv = document.getElementById(operation + '-result');
+            resultDiv.textContent = `Result: ${result}`;
+            resultDiv.style.display = 'block';
+        }
+
+        function showError(operation, error) {
+            const errorDiv = document.getElementById(operation + '-error');
+            errorDiv.textContent = `Error: ${error}`;
+            errorDiv.style.display = 'block';
+        }
+
+        async function calculate(operation) {
+            clearResults(operation);
+            
+            let data = { operation: operation };
+            
+            try {
+                if (operation === 'sqrt') {
+                    data.x = document.getElementById('sqrt-x').value;
+                } else if (operation === 'factorial') {
+                    data.x = document.getElementById('fact-x').value;
+                } else if (operation === 'ln') {
+                    data.x = document.getElementById('ln-x').value;
+                } else if (operation === 'power') {
+                    data.x = document.getElementById('power-x').value;
+                    data.b = document.getElementById('power-b').value;
+                }
+
+                if (!data.x || (operation === 'power' && !data.b)) {
+                    showError(operation, 'Please fill in all fields');
+                    return;
+                }
+
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult(operation, result.result);
+                } else {
+                    showError(operation, result.error);
+                }
+            } catch (error) {
+                showError(operation, 'Network error: ' + error.message);
+            }
+        }
+
+        // Allow Enter key to trigger calculations
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                const focusedElement = document.activeElement;
+                if (focusedElement.id.includes('sqrt')) {
+                    calculate('sqrt');
+                } else if (focusedElement.id.includes('fact')) {
+                    calculate('factorial');
+                } else if (focusedElement.id.includes('ln')) {
+                    calculate('ln');
+                } else if (focusedElement.id.includes('power')) {
+                    calculate('power');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

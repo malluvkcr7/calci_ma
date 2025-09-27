@@ -6,5 +6,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# default command runs interactive CLI. For CI, we'll run tests separately.
-CMD ["python", "calculator.py"]
+# Expose port for web interface
+EXPOSE 8080
+
+# Run web interface by default, with fallback to CLI
+CMD ["python", "-u", "web_calculator.py"]

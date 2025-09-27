@@ -1,0 +1,105 @@
+---
+- name: Deploy Scientific Calculator Docker Container
+  hosts: all
+  become: yes
+  gather_facts: yes
+  
+  vars:
+    docker_image: "{{ docker_image | default('malluvkcr7/sci-calc:latest') }}"
+    container_name: "{{ container_name | default('sci-calc-app') }}"
+    container_port: "{{ container_port | default('8080') }}"
+    host_port: "{{ host_port | default('8080') }}"
+
+  tasks:
+    - name: Update package cache (Ubuntu/Debian)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install required packages
+      package:
+        name:
+          - docker.io
+          - python3-pip
+        state: present
+
+    - name: Install Docker SDK for Python
+      pip:
+        name: docker
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add current user to docker group
+      user:
+        name: "{{ ansible_user | default(ansible_env.USER) }}"
+        groups: docker
+        append: yes
+
+    - name: Stop existing container if running
+      docker_container:
+        name: "{{ container_name }}"
+        state: stopped
+      ignore_errors: yes
+
+    - name: Remove existing container
+      docker_container:
+        name: "{{ container_name }}"
+        state: absent
+      ignore_errors: yes
+
+    - name: Remove old image (optional - for fresh deployment)
+      docker_image:
+        name: "{{ docker_image }}"
+        state: absent
+        force_absent: yes
+      ignore_errors: yes
+
+    - name: Pull latest Docker image
+      docker_image:
+        name: "{{ docker_image }}"
+        source: pull
+        force_source: yes
+
+    - name: Run Scientific Calculator container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ docker_image }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ host_port }}:{{ container_port }}"
+        env:
+          ENVIRONMENT: "production"
+        labels:
+          app: "sci-calc"
+          version: "{{ ansible_date_time.epoch }}"
+
+    - name: Wait for container to be ready
+      wait_for:
+        port: "{{ host_port }}"
+        host: "{{ ansible_default_ipv4.address | default('127.0.0.1') }}"
+        delay: 5
+        timeout: 30
+
+    - name: Display deployment information
+      debug:
+        msg:
+          - "Deployment completed successfully!"
+          - "Container: {{ container_name }}"
+          - "Image: {{ docker_image }}"
+          - "Access URL: http://{{ ansible_default_ipv4.address | default('localhost') }}:{{ host_port }}"
+          - "Container Status: Running"
+
+    - name: Verify container is running
+      docker_container_info:
+        name: "{{ container_name }}"
+      register: container_info
+
+    - name: Show container status
+      debug:
+        msg: "Container {{ container_name }} is {{ container_info.container.State.Status }}"
