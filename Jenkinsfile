@@ -11,27 +11,21 @@ pipeline {
     }
     stage('Setup Python') {
       steps {
-        dir('sci-calc') {
-          sh """
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-          """
-        }
+        sh """
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install -r requirements.txt
+        """
       }
     }
     stage('Test') {
       steps {
-        dir('sci-calc') {
-          sh ". venv/bin/activate && python -m pytest tests/ -v"
-        }
+        sh ". venv/bin/activate && python -m pytest tests/ -v"
       }
     }
     stage('Build Docker Image') {
       steps {
-        dir('sci-calc') {
-          sh "docker build -t ${IMAGE} ."
-        }
+        sh "docker build -t ${IMAGE} ."
       }
     }
     stage('Push to Docker Hub') {
@@ -45,9 +39,7 @@ pipeline {
   }
   post {
     always {
-      dir('sci-calc') {
-        sh 'rm -rf venv || true'
-      }
+      sh 'rm -rf venv || true'
     }
     success {
       echo 'Pipeline completed successfully!'
