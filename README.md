@@ -75,7 +75,7 @@ sci-calc/
 ```bash
 # Pull and run the pre-built image directly from Docker Hub
 docker pull malluvkcr7/sci-calc:latest
-docker run -p 8080:8080 malluvkcr7/sci-calc:latest
+docker run -p 8090:8080 malluvkcr7/sci-calc:latest
 
 # The calculator will be available at: http://localhost:8080
 ```
