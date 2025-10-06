@@ -64,12 +64,12 @@ pipeline {
             export HOST_PORT="8090"
             export BUILD_NUMBER="${BUILD_NUMBER}"
             
-            # Run Ansible deployment (without sudo to avoid permission issues)
-            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini deploy.yml -v -e "docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}" || true
+            # Run Ansible deployment with proper permissions
+            ANSIBLE_HOST_KEY_CHECKING=False sudo -E ansible-playbook -i inventory.ini deploy.yml -v -e "docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}" || echo "Ansible deployment failed, using fallback..."
             
-            # Fallback: Use direct Docker deployment
-            echo "Running fallback deployment script..."
-            ./deploy.sh
+            # Fallback: Use direct Docker deployment with sudo
+            echo "Running deployment script with proper permissions..."
+            sudo -E BUILD_NUMBER=${BUILD_NUMBER} ./deploy.sh
             
             # Wait for application to start
             echo "Waiting for application to start..."
