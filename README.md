@@ -51,7 +51,7 @@ sci-calc/
 ├── 🤖 ansible/
 │   ├── inventory.ini        # Deployment targets
 │   ├── deploy.yml           # Ansible playbook
-│   └── deploy.sh            # Deployment script
+│   └── ansible.cfg          # Ansible configuration
 └── 📖 README.md             # This file
 ```
 
@@ -241,11 +241,11 @@ docker run -p 8080:8080 malluvkcr7/sci-calc:latest
 # Navigate to ansible directory
 cd ansible/
 
-# Run deployment script
-./deploy.sh
-
-# Or use ansible-playbook directly
+# Run Ansible deployment playbook
 ansible-playbook -i inventory.ini deploy.yml
+
+# Or with specific image version
+ansible-playbook -i inventory.ini deploy.yml -e "docker_image=malluvkcr7/sci-calc:latest"
 ```
 
 ### Manual Docker Deployment
