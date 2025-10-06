@@ -1,33 +1,45 @@
 #!/bin/bash
-# Ansible Deployment Script - Simulated
-# This script demonstrates the deployment process that Ansible would perform
+# Ansible Deployment Script for Jenkins CI/CD
+# This script works with Jenkins environment variables
 
-echo "🚀 Starting Ansible-style Deployment of Scientific Calculator"
-echo "=================================================="
+echo "🚀 Starting Ansible Deployment of Scientific Calculator"
+echo "======================================================="
 
-# Variables (these would be in Ansible inventory)
-DOCKER_IMAGE="malluvkcr7/sci-calc:latest"  # Will use latest build
-CONTAINER_NAME="sci-calc-interactive"
-HOST_PORT="8090"
-CONTAINER_PORT="8080"
+# Variables (can be overridden by Jenkins environment)
+DOCKER_IMAGE="${DOCKER_IMAGE:-malluvkcr7/sci-calc:latest}"
+CONTAINER_NAME="${CONTAINER_NAME:-sci-calc-app}"
+HOST_PORT="${HOST_PORT:-8090}"
+CONTAINER_PORT="${CONTAINER_PORT:-8080}"
+BUILD_NUMBER="${BUILD_NUMBER:-latest}"
+
+# If BUILD_NUMBER is set, use versioned image
+if [ "$BUILD_NUMBER" != "latest" ] && [ -n "$BUILD_NUMBER" ]; then
+    DOCKER_IMAGE="malluvkcr7/sci-calc:${BUILD_NUMBER}"
+fi
 
 echo "📦 Deployment Configuration:"
 echo "  - Image: $DOCKER_IMAGE"
 echo "  - Container: $CONTAINER_NAME"
 echo "  - Port Mapping: $HOST_PORT:$CONTAINER_PORT"
+echo "  - Build Number: $BUILD_NUMBER"
 echo
 
 # Step 1: Stop and remove existing container (if exists)
 echo "🛑 Stopping existing container..."
 docker rm -f $CONTAINER_NAME 2>/dev/null || echo "  No existing container found"
 
-# Step 2: Pull latest image
-echo "⬇️  Pulling Docker image..."
+# Step 2: Check if image exists or pull it
+echo "⬇️  Checking Docker image..."
 if docker inspect $DOCKER_IMAGE >/dev/null 2>&1; then
     echo "  ✅ Image $DOCKER_IMAGE found locally"
 else
-    echo "  ❌ Image not found locally"
-    exit 1
+    echo "  📥 Pulling image from registry..."
+    if docker pull $DOCKER_IMAGE; then
+        echo "  ✅ Successfully pulled $DOCKER_IMAGE"
+    else
+        echo "  ❌ Failed to pull image"
+        exit 1
+    fi
 fi
 
 # Step 3: Deploy container
@@ -65,7 +77,7 @@ if docker ps | grep -q $CONTAINER_NAME; then
     
     echo "  Testing factorial(5):"
     RESULT=$(docker exec $CONTAINER_NAME python calculator.py factorial 5)
-    echo "    Result: $RESULT"
+    echo "    Result: $RESULT"8090
     
     echo "  Testing power(2, 3):"
     RESULT=$(docker exec $CONTAINER_NAME python calculator.py power 2 3)
