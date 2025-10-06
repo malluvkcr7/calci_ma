@@ -66,18 +66,26 @@ pipeline {
             
             # Run Ansible deployment with proper permissions
             echo "Attempting Ansible deployment..."
-            if ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini deploy.yml -v -e "docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}" 2>/dev/null; then
-              echo "✅ Ansible deployment successful"
-            elif sudo -E ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini deploy.yml -v -e "docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}"; then
-              echo "✅ Ansible deployment successful with sudo"
-            else
-              echo "⚠️  Ansible deployment failed, using direct deployment script..."
-              if sudo -E BUILD_NUMBER=${BUILD_NUMBER} ./deploy.sh; then
-                echo "✅ Direct deployment successful"
+            if command -v ansible-playbook &> /dev/null; then
+              if ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini deploy.yml -v -e "docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}" 2>/dev/null; then
+                echo "✅ Ansible deployment successful"
               else
-                echo "❌ Both deployment methods failed"
-                exit 1
+                echo "⚠️ Ansible deployment failed, using direct Docker deployment..."
+                # Direct Docker deployment without sudo
+                docker stop sci-calc-app || echo "No existing container to stop"
+                docker rm sci-calc-app || echo "No existing container to remove"
+                docker pull malluvkcr7/sci-calc:${BUILD_NUMBER}
+                docker run -d --name sci-calc-app -p 8090:8080 malluvkcr7/sci-calc:${BUILD_NUMBER}
+                echo "✅ Direct Docker deployment completed"
               fi
+            else
+              echo "⚠️ Ansible not available, using direct Docker deployment..."
+              # Direct Docker deployment without sudo
+              docker stop sci-calc-app || echo "No existing container to stop"
+              docker rm sci-calc-app || echo "No existing container to remove"
+              docker pull malluvkcr7/sci-calc:${BUILD_NUMBER}
+              docker run -d --name sci-calc-app -p 8090:8080 malluvkcr7/sci-calc:${BUILD_NUMBER}
+              echo "✅ Direct Docker deployment completed"
             fi
             
             # Wait for application to start
