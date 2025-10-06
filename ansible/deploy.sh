@@ -8,7 +8,7 @@ echo "=================================================="
 # Variables (these would be in Ansible inventory)
 DOCKER_IMAGE="malluvkcr7/sci-calc:latest"  # Will use latest build
 CONTAINER_NAME="sci-calc-interactive"
-HOST_PORT="8080"
+HOST_PORT="8090"
 CONTAINER_PORT="8080"
 
 echo "📦 Deployment Configuration:"
