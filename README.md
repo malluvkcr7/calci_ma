@@ -168,12 +168,44 @@ pytest tests/ --cov=calculator --cov-report=html
 ## 🔄 CI/CD Pipeline
 
 ### Jenkins Pipeline Stages
-1. **Checkout**: Pull latest code from GitHub
-2. **Setup Python**: Create virtual environment and install dependencies
-3. **Test**: Run comprehensive test suite with pytest
-4. **Build Docker Image**: Create optimized container image
-5. **Push to Registry**: Upload to Docker Hub
-6. **Deploy**: Automated deployment with Ansible
+
+#### Stage 1: Checkout
+- Clones the latest code from GitHub repository
+- Initializes the workspace for build process
+- Ensures clean state for each build
+
+#### Stage 2: Setup Python
+- Creates isolated Python virtual environment
+- Installs all project dependencies from requirements.txt
+- Prepares Python environment for testing and building
+
+#### Stage 3: Test
+- Executes comprehensive test suite using pytest
+- Runs all unit tests with coverage reporting
+- Validates code quality and functionality before deployment
+- Fails the pipeline if any tests fail
+
+#### Stage 4: Build Docker Image
+- Creates optimized Docker image using multi-stage builds
+- Tags image with both build number and 'latest' tags
+- Implements efficient layer caching for faster builds
+- Includes all application dependencies and configurations
+
+#### Stage 5: Registry Push & Deployment
+- Authenticates with Docker Hub using stored credentials
+- Pushes both versioned and latest tags to public registry
+- Enables immediate public access to updated application
+- Maintains deployment history through tagged versions
+
+#### Stage 6: Ansible Deployment & Verification
+- **Automated Infrastructure Management**: Uses Ansible playbooks for consistent deployments
+- **Dynamic Configuration**: Updates inventory with current build number for versioned deployments
+- **Container Lifecycle Management**: Stops existing containers, pulls latest images, and deploys new versions
+- **Health Verification**: Performs automated health checks and functional testing post-deployment
+- **Fallback Mechanism**: Includes robust error handling with direct Docker deployment fallback
+- **Production Readiness**: Configures port mappings (8090:8080) and environment variables
+- **Deployment Validation**: Tests API endpoints and web interface accessibility
+- **Rollback Capability**: Maintains previous image versions for quick rollback if needed
 
 ### Automated Triggers
 - ✅ Automatic builds on GitHub push
