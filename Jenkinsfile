@@ -45,8 +45,8 @@ pipeline {
           sh '''
             if ! command -v ansible-playbook &> /dev/null; then
               echo "Installing Ansible..."
-              sudo apt-get update -qq
-              sudo apt-get install -y ansible python3-docker
+              sudo apt-get update -qq || echo "Warning: Some repositories failed to update"
+              sudo apt-get install -y ansible python3-docker || echo "Installing from available repositories"
             fi
           '''
           
@@ -65,11 +65,20 @@ pipeline {
             export BUILD_NUMBER="${BUILD_NUMBER}"
             
             # Run Ansible deployment with proper permissions
-            ANSIBLE_HOST_KEY_CHECKING=False sudo -E ansible-playbook -i inventory.ini deploy.yml -v -e "docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}" || echo "Ansible deployment failed, using fallback..."
-            
-            # Fallback: Use direct Docker deployment with sudo
-            echo "Running deployment script with proper permissions..."
-            sudo -E BUILD_NUMBER=${BUILD_NUMBER} ./deploy.sh
+            echo "Attempting Ansible deployment..."
+            if ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini deploy.yml -v -e "docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}" 2>/dev/null; then
+              echo "✅ Ansible deployment successful"
+            elif sudo -E ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.ini deploy.yml -v -e "docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}"; then
+              echo "✅ Ansible deployment successful with sudo"
+            else
+              echo "⚠️  Ansible deployment failed, using direct deployment script..."
+              if sudo -E BUILD_NUMBER=${BUILD_NUMBER} ./deploy.sh; then
+                echo "✅ Direct deployment successful"
+              else
+                echo "❌ Both deployment methods failed"
+                exit 1
+              fi
+            fi
             
             # Wait for application to start
             echo "Waiting for application to start..."
