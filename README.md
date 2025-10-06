@@ -1,4 +1,4 @@
-# 🧮 Scientific Calculator - Complete DevOps Pipeline
+# 🧮 Scientific Calculator - Complete DevOps Pipeline with Ansible
 
 A feature-rich scientific calculator application built with Python, demonstrating professional DevOps practices including CI/CD, containerization, and automated deployment.
 
