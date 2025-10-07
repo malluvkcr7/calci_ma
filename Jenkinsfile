@@ -1,7 +1,12 @@
 pipeline {
   agent any
   environment {
-    IMAGE = "malluvkcr7/sci-calc:${env.BUILD_NUMBER}"
+    IMAGE = "          # Set up environment and run deployment
+          sh '''
+            cd ansible
+            
+            # Update inventory with the new image tag
+            sed -i "s|docker_image=.*|docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}|" inventory.inicr7/sci-calc:${env.BUILD_NUMBER}"
   }
   stages {
     stage('Checkout') {
@@ -53,6 +58,7 @@ pipeline {
           // Set up environment and run deployment
           sh '''
             cd ansible
+            chmod +x deploy.sh
             
             # Update inventory with the new image tag
             sed -i "s|docker_image=.*|docker_image=malluvkcr7/sci-calc:${BUILD_NUMBER}|" inventory.ini
