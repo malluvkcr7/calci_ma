@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # calculator.py - core functions + simple CLI
 # CI-TRIGGER: minor comment added to trigger webhook / CI when pushed
-
+#lol
 import math
 import sys
 
