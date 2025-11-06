@@ -2,6 +2,7 @@
 # calculator.py - core functions + simple CLI
 # CI-TRIGGER: minor comment added to trigger webhook / CI when pushed
 #lol
+#op
 import math
 import sys
 
